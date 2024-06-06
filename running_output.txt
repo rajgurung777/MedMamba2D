@@ -1,0 +1,221 @@
+==========================================================================================
+ Dataset-A for Train (512 x 512) and Dataset-B (size of pixel is very high: 2048 x 1536) for Testing
+==========================================================================================
+Parameters: batchsize 32, lr=0.0001,  epochs = 100,    optim.Adam
+
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ python3.10 test.py 
+using cuda:0 device.
+using 237 images for testing.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 8/8 [00:11<00:00,  1.43s/it]
+Test Accuracy: 0.595
+
+Classification Report:
+                   precision    recall  f1-score   support
+
+Without Dysplasia       0.84      0.63      0.72        91
+             OSCC       0.51      0.75      0.61        89
+   With Dysplasia       0.46      0.30      0.36        57
+
+         accuracy                           0.59       237
+        macro avg       0.60      0.56      0.56       237
+     weighted avg       0.62      0.59      0.59       237
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ 
+==========================================================================================
+
+Parameters: batchsize 64, lr=0.00001,  epochs = 100,    optim.Adam
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ python3.10 test.py 
+using cuda:0 device.
+using 237 images for testing.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 8/8 [00:11<00:00,  1.42s/it]
+Test Accuracy: 0.578
+
+Classification Report:
+                   precision    recall  f1-score   support
+
+Without Dysplasia       0.79      0.62      0.69        91
+             OSCC       0.49      0.69      0.57        89
+   With Dysplasia       0.48      0.35      0.40        57
+
+         accuracy                           0.58       237
+        macro avg       0.59      0.55      0.56       237
+     weighted avg       0.60      0.58      0.58       237
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ 
+
+
+
+
+==========================================================================================
+===============
+
+Parameters: batchsize 64, lr=0.0001,  epochs = 100,    optim.SGD
+
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ python3.10 test.py 
+using cuda:0 device.
+using 237 images for testing.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 8/8 [00:11<00:00,  1.43s/it]
+Test Accuracy: 0.527
+
+Classification Report:
+/home/coe_iot_ai/Desktop/BrainAI-master/iot_env/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1509: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+/home/coe_iot_ai/Desktop/BrainAI-master/iot_env/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1509: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+/home/coe_iot_ai/Desktop/BrainAI-master/iot_env/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1509: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
+                   precision    recall  f1-score   support
+
+Without Dysplasia       0.70      0.58      0.63        91
+             OSCC       0.45      0.81      0.58        89
+   With Dysplasia       0.00      0.00      0.00        57
+
+         accuracy                           0.53       237
+        macro avg       0.38      0.46      0.40       237
+     weighted avg       0.44      0.53      0.46       237
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ 
+
+
+==========================================================================================
+
+
+
+
+
+
+
+
+==========================================================================================
+ Dataset-A for Train (512 x 512) splited into Train (80%) and for Testing (20%)
+==========================================================================================
+
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ python3.10 test.py 
+using cuda:0 device.
+using 754 images for testing.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 24/24 [00:05<00:00,  4.56it/s]
+Test Accuracy: 0.874
+
+Classification Report:
+                   precision    recall  f1-score   support
+
+Without Dysplasia       0.88      0.90      0.89       226
+             OSCC       0.88      0.89      0.88       386
+   With Dysplasia       0.83      0.80      0.82       142
+
+         accuracy                           0.87       754
+        macro avg       0.87      0.86      0.86       754
+     weighted avg       0.87      0.87      0.87       754
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ 
+
+
+
+==========================================================================================
+
+Now using the Trained model (using 80% of Dataset-A) testing on the Dataset-B
+
+
+[epoch 98] train_loss: 0.323  train_accuracy: 0.878  val_accuracy: 0.881
+train epoch[99/100] loss:0.516: 100%|█████████████████████████████████████████████████████████████████████████████████████| 48/48 [00:18<00:00,  2.55it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:01<00:00,  7.72it/s]
+[epoch 99] train_loss: 0.289  train_accuracy: 0.888  val_accuracy: 0.861
+train epoch[100/100] loss:0.821: 100%|████████████████████████████████████████████████████████████████████████████████████| 48/48 [00:18<00:00,  2.55it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:01<00:00,  7.72it/s]
+[epoch 100] train_loss: 0.299  train_accuracy: 0.880  val_accuracy: 0.870
+Finished Training
+Confusion matrix, without normalization
+[[195  29   2]
+ [ 14 341  31]
+ [  2  20 120]]
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ 
+
+
+
+
+==========================================================================================
+
+Now using the Trained model (using 80% of Dataset-A)  and perform K-Fold Cross-Validation on the entire Dataset-A
+******************************************************************************************************************
+
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ python3.10 k_fold_validation.py 
+using cuda:0 device.
+Total dataset size:  3763
+Fold 0
+100%|█████████████████████████████████████████████████████████████████████████| 24/24 [00:04<00:00,  4.97it/s]
+Fold 0 Test Accuracy: 0.9229747675962815
+
+Confusion Matrix:
+[[210  14   1]
+ [ 13 344  10]
+ [  3  17 141]]
+Confusion matrix, without normalization
+[[210  14   1]
+ [ 13 344  10]
+ [  3  17 141]]
+Fold 1
+100%|█████████████████████████████████████████████████████████████████████████| 24/24 [00:04<00:00,  5.33it/s]
+Fold 1 Test Accuracy: 0.9229747675962815
+
+Confusion Matrix:
+[[199  14   0]
+ [ 11 374  17]
+ [  0  16 122]]
+Confusion matrix, without normalization
+[[199  14   0]
+ [ 11 374  17]
+ [  0  16 122]]
+Fold 2
+100%|█████████████████████████████████████████████████████████████████████████| 24/24 [00:04<00:00,  5.53it/s]
+Fold 2 Test Accuracy: 0.9083665338645418
+
+Confusion Matrix:
+[[202  22   1]
+ [ 13 360   7]
+ [  3  23 122]]
+Confusion matrix, without normalization
+[[202  22   1]
+ [ 13 360   7]
+ [  3  23 122]]
+Fold 3
+100%|█████████████████████████████████████████████████████████████████████████| 24/24 [00:04<00:00,  5.61it/s]
+Fold 3 Test Accuracy: 0.9348404255319149
+
+Confusion Matrix:
+[[225   9   1]
+ [ 12 370  10]
+ [  2  15 108]]
+Confusion matrix, without normalization
+[[225   9   1]
+ [ 12 370  10]
+ [  2  15 108]]
+Fold 4
+100%|█████████████████████████████████████████████████████████████████████████| 24/24 [00:04<00:00,  5.61it/s]
+Fold 4 Test Accuracy: 0.9348404255319149
+
+Confusion Matrix:
+[[218  10   0]
+ [  8 366  15]
+ [  0  16 119]]
+Confusion matrix, without normalization
+[[218  10   0]
+ [  8 366  15]
+ [  0  16 119]]
+K-FOLD CROSS VALIDATION RESULTS FOR 5 FOLDS
+--------------------------------
+Fold 0: 0.9229747675962815
+Fold 1: 0.9229747675962815
+Fold 2: 0.9083665338645418
+Fold 3: 0.9348404255319149
+Fold 4: 0.9348404255319149
+Average: 0.9247993840241868
+(iot_env) coe_iot_ai@tokumei:~/Desktop/Amit/medHisPath$ 
+
+
+
+
+
