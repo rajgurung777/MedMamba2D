@@ -1,3 +1,11 @@
+"""
+This script perform training using input as the image along with additional features.
+
+Here since the model is trained with the additional features to classify different classes (5 classes).
+So accordingly for inference, the input should be image along with the additional features so that the output class is predicted.
+
+"""
+
 import os
 import sys
 import json
