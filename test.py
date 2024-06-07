@@ -1,3 +1,14 @@
+"""
+This script perform test using the trained model.
+
+Here since the model is trained with only the input image to classify different classes (3 classes).
+So for inference the input is an image and the output is the predicted class.
+
+"""
+
+
+
+
 import os
 import sys
 import torch

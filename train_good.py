@@ -1,3 +1,13 @@
+"""
+This script perform training using input as the image and output is just the class.
+
+Here since the model is trained only with images to classify one out of the 3 classes.
+So accordingly for inference, the input should be an image so that the output class is predicted.
+
+"""
+
+
+
 import os
 import sys
 import json
