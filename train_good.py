@@ -4,6 +4,9 @@ This script perform training using input as the image and output is just the cla
 Here since the model is trained only with images to classify one out of the 3 classes.
 So accordingly for inference, the input should be an image so that the output class is predicted.
 
+The dataset: images/split_data/train contain training images (note we do not take CSV file here) arranged in 
+subfolders where the names of the subfolders are the class name. The dataset has three classes (OSCC, with-dysplasia and without-dysplasia). These images are histopathological images for oral cancer.
+
 """
 
 
