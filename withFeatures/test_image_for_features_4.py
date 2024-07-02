@@ -17,6 +17,12 @@ from PIL import Image
 import torch.nn.functional as F
 from MedMamba import VSSM as medmamba
 
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
+
 class VSSMWithMultipleHeads(nn.Module):
     def __init__(self, original_model, num_classes, num_localizations, num_sizes, num_genders, num_age_groups):
         super(VSSMWithMultipleHeads, self).__init__()
@@ -136,6 +142,155 @@ def testSingle_image():
     print("Predicted Size:", size_mapping[str(size_pred)])
     print("Predicted Gender:", gender_mapping[str(gender_pred)])
     print("Predicted Age Group:", age_group_mapping[str(age_pred)])
+       
+
+
+def load_data(csv_file):
+    df = pd.read_csv(csv_file)
+    
+    # Encode categorical variables
+    df['localization'] = df['localization'].astype('category')
+    df['localization'] = df['localization'].cat.codes
+    
+    df['gender'] = df['gender'].map({'M': 0, 'F': 1})
+    
+    df['age_group'] = df['age_group'].astype('category')
+    df['age_group'] = df['age_group'].cat.codes
+
+    df['larger_size'] = df['larger_size'].astype('category')
+    df['larger_size'] = df['larger_size'].cat.codes
+    
+    df['Muthukumar_Classes'] = df['Muthukumar_Classes'].astype('category')
+    df['Muthukumar_Classes'] = df['Muthukumar_Classes'].cat.codes
+    
+    return df
+
+
+
+class CustomImageDataset(torch.utils.data.Dataset):
+    def __init__(self, annotations_file, img_dir, transform=None):
+        self.img_labels = load_data(annotations_file)
+        self.img_dir = img_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.img_labels)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 3])
+        image = Image.open(img_path).convert("RGB")
+        label = self.img_labels.iloc[idx, -1]
+        
+        localization = self.img_labels.iloc[idx, 4]
+        larger_size = self.img_labels.iloc[idx, 5]
+        gender = self.img_labels.iloc[idx, 6]
+        age_group = self.img_labels.iloc[idx, 7]
+        
+        additional_features = torch.tensor([localization, larger_size, gender, age_group], dtype=torch.float32)
+        
+        if self.transform:
+            image = self.transform(image)
+            
+        return image, additional_features, label
+
+
+
+
+# class CustomImageDataset(torch.utils.data.Dataset):
+#     def __init__(self, annotations_file, img_dir, transform=None):
+#         self.img_labels = load_data(annotations_file)
+#         self.img_dir = img_dir
+#         self.transform = transform
+
+#     def __len__(self):
+#         return len(self.img_labels)
+
+#     def __getitem__(self, idx):
+#         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 3])
+#         image = load_image(img_path, self.transform)
+#         label = self.img_labels.iloc[idx, -1]
+        
+#         localization = self.img_labels.iloc[idx, 4]
+#         larger_size = self.img_labels.iloc[idx, 5]
+#         gender = self.img_labels.iloc[idx, 6]
+#         age_group = self.img_labels.iloc[idx, 7]
+        
+#         additional_features = torch.tensor([localization, larger_size, gender, age_group], dtype=torch.long)
+        
+#         return image, additional_features, label
+
+
+
+def compute_metrics(model, device, test_loader, num_classes, num_localizations, num_sizes, num_genders, num_age_groups):
+    model.eval()
+    class_criterion = nn.CrossEntropyLoss()
+    loc_criterion = nn.CrossEntropyLoss()
+    size_criterion = nn.CrossEntropyLoss()
+    gender_criterion = nn.CrossEntropyLoss()
+    age_criterion = nn.CrossEntropyLoss()
+
+    total_loss = 0
+    correct_class = 0
+    correct_loc = 0
+    correct_size = 0
+    correct_gender = 0
+    correct_age = 0
+    total_samples = 0
+
+    all_class_preds = []
+    all_class_labels = []
+
+    with torch.no_grad():
+        for images, features, labels in test_loader:
+            images = images.to(device)
+            features = features.to(device).long()
+            labels = labels.to(device).long()
+            
+            class_outputs, loc_outputs, size_outputs, gender_outputs, age_outputs = model(images)
+            
+            loss_class = class_criterion(class_outputs, labels)
+            loss_loc = loc_criterion(loc_outputs, features[:, 0])
+            loss_size = size_criterion(size_outputs, features[:, 1])
+            loss_gender = gender_criterion(gender_outputs, features[:, 2])
+            loss_age = age_criterion(age_outputs, features[:, 3])
+            
+            total_loss += (loss_class + loss_loc + loss_size + loss_gender + loss_age).item()
+            
+            class_preds = class_outputs.argmax(dim=1)
+            loc_preds = loc_outputs.argmax(dim=1)
+            size_preds = size_outputs.argmax(dim=1)
+            gender_preds = gender_outputs.argmax(dim=1)
+            age_preds = age_outputs.argmax(dim=1)
+
+            correct_class += (class_preds == labels).sum().item()
+            correct_loc += (loc_preds == features[:, 0]).sum().item()
+            correct_size += (size_preds == features[:, 1]).sum().item()
+            correct_gender += (gender_preds == features[:, 2]).sum().item()
+            correct_age += (age_preds == features[:, 3]).sum().item()
+            total_samples += labels.size(0)
+
+            all_class_preds.extend(class_preds.cpu().numpy())
+            all_class_labels.extend(labels.cpu().numpy())
+
+    avg_loss = total_loss / total_samples
+    class_accuracy = correct_class / total_samples
+    loc_accuracy = correct_loc / total_samples
+    size_accuracy = correct_size / total_samples
+    gender_accuracy = correct_gender / total_samples
+    age_accuracy = correct_age / total_samples
+
+    print(f"Average Loss: {avg_loss:.4f}")
+    print(f"Class Accuracy: {class_accuracy:.4f}")
+    print(f"Localization Accuracy: {loc_accuracy:.4f}")
+    print(f"Size Accuracy: {size_accuracy:.4f}")
+    print(f"Gender Accuracy: {gender_accuracy:.4f}")
+    print(f"Age Group Accuracy: {age_accuracy:.4f}")
+
+    cm = confusion_matrix(all_class_labels, all_class_preds)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[str(i) for i in range(num_classes)])
+    disp.plot(cmap=plt.cm.Blues)
+    plt.show()
+
 
 def testImage_Folder():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -191,12 +346,41 @@ def testImage_Folder():
             # print("Predicted Size:", size_mapping[str(size_pred)])
             # print("Predicted Gender:", gender_mapping[str(gender_pred)])
             # print("Predicted Age Group:", age_group_mapping[str(age_pred)])
-         
+  
 
+
+def testImage_Folder_report():
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("Using {} device.".format(device))
+
+    data_transform = transforms.Compose([transforms.Resize((224, 224)),
+                                         transforms.ToTensor(),
+                                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+    # Load the class indices
+    mappings = load_mappings()
+    
+    num_classes = len(mappings['Muthukumar_Classes'])
+    num_localizations = len(mappings['localization'])
+    num_sizes = len(mappings['larger_size'])
+    num_genders = len(mappings['gender'])
+    num_age_groups = len(mappings['age_group'])
+    
+    original_model = medmamba(num_classes=num_classes)
+    model = VSSMWithMultipleHeads(original_model, num_classes, num_localizations, num_sizes, num_genders, num_age_groups)
+    model.load_state_dict(torch.load('./AmitMultiClassNet.pth'))
+    model.to(device)
+
+    # Prepare test dataset from CSV
+    test_dataset = CustomImageDataset(annotations_file="images/dataset_B.csv", img_dir="images/dataset_B", transform=data_transform)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+    compute_metrics(model, device, test_loader, num_classes, num_localizations, num_sizes, num_genders, num_age_groups)
 
 
 if __name__ == '__main__':
 
-    # testSingle_image()
-    testImage_Folder()
+    testSingle_image()
+    # testImage_Folder()
+    # testImage_Folder_report()   # See the running output in the file /home/coe_iot_ai/Desktop/Amit/medHisPath/running_output.txt
 
